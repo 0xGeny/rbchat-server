@@ -1,11 +1,11 @@
-
+require('dotenv').config()
+var jwt = require('socketio-jwt');
 var roomService = require('../services/room.service');
 
 const onconnect = (socket) => {
 
-  socket.on ('login', (msg, func) => {
+  socket.on ('login', (msg) => {
     console.log(msg);
-    func(msg.token);
   });
 
   socket.on ('init', (msg) => {
@@ -14,7 +14,7 @@ const onconnect = (socket) => {
   });
 
   socket.on('disconnect', function() {
-    console.log('A user disconnected');
+    console.log('Disconnected');
 
     // var i = allClients.indexOf(socket);
     // allClients.splice(i, 1);
@@ -24,6 +24,10 @@ const onconnect = (socket) => {
 }
 
 const usesokcet = (io) => {
+  io.use(jwt.authorize({
+    secret: process.env.SECRET_KEY,
+    handshake: true
+  }));
   io.on('connection', onconnect);
 }
 

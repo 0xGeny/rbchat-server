@@ -3,8 +3,10 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const http = require('http').createServer(app);
-const path = require('path');
+
+
 
 // Connect to database
 const db_uri = process.env.MONGODB_URI;
@@ -20,22 +22,29 @@ mongoose.connect(db_uri, {
   err => console.log("Mongo Connection error")
 );
 
+
+
 // express init
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
+app.use(cookieParser())
 
 // api routes
-app.use('/', require('./routes'));
+require('./routers/index.router')(app);
 
-// global error handler
-app.use(require('./helpers/http-error-handler'));
 
+
+
+// web sockets
 var io = require('socket.io')(http, {cors: {
   origin: '*',
 }});
 
 require('./sockets/index.socket')(io);
+
+
+
 
 const port = process.env.PORT || 8080;
 http.listen(port, () => {

@@ -1,17 +1,15 @@
 require('dotenv').config()
-var express = require('express');
-var router = express.Router();
 var jwt = require('jsonwebtoken');
 var User = require('../models/user.model');
 
-// routes
-router.post('/login', authenticate);
-
-async function authenticate(req, res, next) {
+async function login(req, res) {
   const { username, password } = req.body;
   const user = await User.findOne({ user_name: username });
   if (user && password == user.password) {
-    const token = jwt.sign({ sub: user.user_id }, process.env.SECRET_KEY, { expiresIn: '7d' });
+    const auth_info = {
+      user_id: user.user_id
+    };
+    const token = jwt.sign(auth_info, process.env.SECRET_KEY, { algorithm: 'HS256', expiresIn: '7d' });
     res.status(200).json({
       user_id: user.user_id,
       token: token
@@ -24,4 +22,4 @@ async function authenticate(req, res, next) {
   }
 }
 
-module.exports = router;
+module.exports = {login};
