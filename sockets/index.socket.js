@@ -4,9 +4,10 @@ var roomService = require('../services/room.service');
 
 const onconnect = (socket) => {
 
-  socket.on ('login', (msg) => {
-    console.log(msg);
-  });
+  socket.on("test", (msg, fn) => {
+    console.log("Test connection: ", msg);
+    if (fn) fn(msg);
+  })
 
   socket.on ('init', (msg) => {
     const rooms = roomService.getRooms(msg.user_id);
@@ -20,7 +21,7 @@ const onconnect = (socket) => {
     // allClients.splice(i, 1);
   });
 
-  console.log('A new user connected');
+  console.log('A new user connected: user_id='+socket.decoded_token.user_id);
 }
 
 const usesokcet = (io) => {

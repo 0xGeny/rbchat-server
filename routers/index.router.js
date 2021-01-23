@@ -10,7 +10,7 @@ var errorHandler = require('../helpers/http-error-handler');
 const route = (app) => {
 
   app.use('/auth', authRouter);
-  app.use(jwt({ secret: process.env.SECRET_KEY, algorithms: ['HS256'] }));
+  app.use(jwt({ secret: process.env.SECRET_KEY , algorithms: ['HS256'] }));
   app.use('/api', apiRouter);
 
   // global error handler
