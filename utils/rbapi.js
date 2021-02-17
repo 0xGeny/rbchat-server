@@ -21,8 +21,8 @@ const login = (username, password) => {
       resolve(res.data);
     })
     .catch(error => {
-      if (error.response) reject(error.response.data);
-      else reject(error.message);
+      if (error.response) reject(error.response.data.error_description);
+      else reject("Authentication Error");
     })  
 
   })
@@ -35,7 +35,7 @@ const getUser = (access_token) => {
         resolve(res.data);
       })
       .catch(error => {
-        if (error.response) reject(error.response.data);
+        if (error.response) reject(error.response.data.error_description);
         else reject(error.message);
       });
   })
@@ -48,7 +48,7 @@ const getUserList = (access_token) => {
         resolve(res.data);
       })
       .catch(error => {
-        if (error.response) reject(error.response.data);
+        if (error.response) reject(error.response.data.error_description);
         else reject(error.message);
       });
   })
@@ -59,11 +59,9 @@ const authUser = (username, password) => {
     login(username, password)
       .then(lg_data => {
         getUser(lg_data.access_token)
-          .then(user_data => {
-            resolve({
-              user_id: uid,
-              user_name: uname
-            })
+          .then(res => {
+            if (res.success) resolve({user_id: Number(res.data.uid)});
+            else reject("Authentication Error");
           })
           .catch(reject);
       })
@@ -100,11 +98,13 @@ const formatUsers = (rawData) => {
   for (var i = 0; i < rawData.length; i++) {
     const raw = rawData[i];
     const newUser = {
-      user_id: raw.id,
-      user_name: raw.username,
+      user_id: Number(raw.id),
+      user_nickname: raw.userid,
+      user_name: raw.name,
       avatar_url: raw.avatar,
-      team_id: raw.team,
-      role: raw.role
+      team_id: raw.teamid,
+      role: raw.role,
+      scope: raw.scope
     }
     users_new.push(newUser);
   }

@@ -55,7 +55,6 @@ const sendToRoom = (event, room, data, except = null) => {
 }
 
 const sendToAll = (event, data, except = null) => {
-  //console.log("broadcasting", data);
   socket_io.emit(event, data);
 }
 

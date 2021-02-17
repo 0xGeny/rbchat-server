@@ -3,7 +3,7 @@ var jwt = require('jsonwebtoken');
 var User = require('../models/user.model');
 var rbapi = require('../utils/rbapi');
 
-async function login(req, res) {
+async function login_db(req, res) {
   const { username, password } = req.body;
   const user = await User.findOne({ user_name: username });
   if (user && password == user.password) {
@@ -23,10 +23,13 @@ async function login(req, res) {
   }
 }
 
-async function login_rbapi(req, res) {
+async function login(req, res) {
   const { username, password } = req.body;
   try {
-    const user = rbapi.authUser(username, password);
+    const user = await rbapi.authUser(username, password);
+    console.log(typeof user.user_id);
+    if (typeof user.user_id !== "number")
+      throw "Authentication Error";
     const auth_info = {
       user_id: user.user_id
     };
