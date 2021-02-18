@@ -20,7 +20,6 @@ const usesokcet = (io) => {
 module.exports = usesokcet;
 
 const watch_dog_func = () => {
-  /// console.log(userinfo.getReducedInfos());
   const typing_limit = config.MAX_WATCH_DOG_COUNT - config.TYPING_LIFE_COUNT_LIMIT;
   for (var i in userinfo.uinfos) {
     const uinfo = userinfo.uinfos[i];
@@ -29,7 +28,7 @@ const watch_dog_func = () => {
       continue;
     uinfo.watch_dog--;
     if (uinfo.typing_at && uinfo.watch_dog <= typing_limit) {
-      engine.getRoom(uinfo.typing_at)
+      engine.getRoomMembers(uinfo.typing_at)
         .then(room => {
           sendToRoom("typing:down", room, {user_id, room_id: uinfo.typing_at, is_typing: false}, user_id);
           uinfo.typing_at = null;
@@ -52,6 +51,14 @@ const sendToRoom = (event, room, data, except = null) => {
     if (member_id !== except && member_socket && member_socket.connected)
       member_socket.emit(event, data);
   }
+}
+
+const sendToUser = (event, user_id, data) => {
+  if (!userinfo.uinfos[user_id])
+      return;
+  const user_socket = userinfo.uinfos[user_id].socket;
+  if (user_socket && user_socket.connected)
+    user_socket.emit(event, data);
 }
 
 const sendToAll = (event, data, except = null) => {
@@ -134,10 +141,24 @@ const onconnect = (socket) => {
   
   socket.on("typing:up", (data, fn) => {
     log_func("Typing", "typing:up");
-    engine.getRoom(data.room_id)
+    engine.getRoomMembers(data.room_id)
       .then(room => {
         userinfo.setUserTyping(user_id, data.room_id);
         sendToRoom("typing:down", room, {user_id, room_id: data.room_id, is_typing: true}, user_id);
+        if (fn) fn({msg: config.SOCKET_SUCCESS});
+      })
+      .catch(error => {
+        console.log(error);
+        if (fn) fn({msg: error});
+      })
+  })
+
+  socket.on("more:up", (data, fn) => {
+    log_func("More messages", "more:up");
+    console.log(data);
+    engine.getMessages(data.room_id, data.position, data.count)
+      .then(messages => {
+        sendToUser("more:down", user_id, {messages, room_id: data.room_id});
         if (fn) fn({msg: config.SOCKET_SUCCESS});
       })
       .catch(error => {

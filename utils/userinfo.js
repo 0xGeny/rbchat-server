@@ -25,7 +25,6 @@ const refreshUserInfo = (user_id) => {
   uinfo.watch_dog = config.MAX_WATCH_DOG_COUNT;
   uinfo.status = 1; // 1: online, 2: offline, 3: away
   uinfos[user_id] = uinfo;
-  console.log(prev_status, uinfo.status);
   if (prev_status !== uinfo.status)
     return true;
   return false;

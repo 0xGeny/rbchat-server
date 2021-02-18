@@ -20,7 +20,11 @@ async function getAll(req, res) {
     });
     return;
   }
-  const rooms = await Room.find({ members: { $elemMatch: { user_id: user_id } } });
+  const cnt = config.MESSAGE_LIMIT_PER_PAGE;
+  const rooms = await Room.aggregate([
+    {$match: { members: { $elemMatch: { user_id: user_id } } }},
+    {$addFields: {msg_count: {$size: '$messages'}, messages: {$slice: ["$messages", -cnt,  cnt]}}},
+  ]);
   const me = users.find(user => user.user_id == user_id);
   const uinfos = userinfo.getReducedInfos();
   
