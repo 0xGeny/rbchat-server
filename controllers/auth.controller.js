@@ -27,7 +27,6 @@ async function login(req, res) {
   const { username, password } = req.body;
   try {
     const user = await rbapi.authUser(username, password);
-    console.log(typeof user.user_id);
     if (typeof user.user_id !== "number")
       throw "Authentication Error";
     const auth_info = {
