@@ -33,9 +33,9 @@ const refreshUserInfo = (user_id) => {
 const disconnectUserInfo = (user_id) => {
   var uinfo = uinfos[user_id];
   if (!uinfo) uinfo = {};
-  uinfo.socket = null;
+  //uinfo.socket = null;
   uinfo.typing_at = null;
-  uinfo.watch_dog = 0;
+  //uinfo.watch_dog = 0;
   uinfo.status = 2;
   uinfos[user_id] = uinfo;
   return uinfo;
@@ -64,6 +64,13 @@ const getOneReducedInfo = (user_id) => {
   }
 }
 
+const isUserAlive = (user_id) => {
+  const uinfo = uinfos[user_id];
+  if (uinfo && uinfo.socket && uinfo.socket.connected)
+    return true;
+  return false;
+}
+
 module.exports = {
   uinfos,
   setOnUinfoChanged,
@@ -72,5 +79,6 @@ module.exports = {
   refreshUserInfo,
   disconnectUserInfo,
   getReducedInfos,
-  getOneReducedInfo
+  getOneReducedInfo,
+  isUserAlive
 }

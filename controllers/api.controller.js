@@ -15,7 +15,7 @@ async function getAll(req, res) {
     users = await rbapi.fetchUsers();
   }
   catch(error) {
-    res.status(200).json({
+    res.status(250).json({
       "message": "Can not access to the server."
     });
     return;
@@ -25,6 +25,9 @@ async function getAll(req, res) {
     {$match: { members: { $elemMatch: { user_id: user_id } } }},
     {$addFields: {msg_count: {$size: '$messages'}, messages: {$slice: ["$messages", -cnt,  cnt]}}},
   ]);
+  for (var i = 0; i < rooms.length; i++) {
+    rooms[i].msg_count = rooms[i].msg_count - rooms[i].messages.length;
+  }
   const me = users.find(user => user.user_id == user_id);
   const uinfos = userinfo.getReducedInfos();
   
@@ -39,10 +42,10 @@ function postFile(req, res) {
   upload(req, res, (err) => {
     if (err) {
       if (err.code === "LIMIT_FILE_SIZE") {
-        console.log("The file size is too big! Max. 10MB");
+        console.log("The file size is too big!");
         res.status(200).json({
           success: false,
-          message: "File Size Limit. Max: 10MB",
+          message: "File Size Limit",
         });
       } else {
         console.log(err);

@@ -48,8 +48,9 @@ const sendToRoom = (event, room, data, except = null) => {
     if (!userinfo.uinfos[member_id])
       continue;
     const member_socket = userinfo.uinfos[member_id].socket;
-    if (member_id !== except && member_socket && member_socket.connected)
+    if (member_id !== except && member_socket && member_socket.connected) {
       member_socket.emit(event, data);
+    }
   }
 }
 
@@ -81,13 +82,13 @@ const onconnect = (socket) => {
   }
 
   log_func("connected");
+  userinfo.connectUserInfo(user_id, socket);
+  broadcastUinfo(user_id);
   socket.on('disconnect', function() {
     log_func("disconnected");
     userinfo.disconnectUserInfo(user_id);
     broadcastUinfo(user_id);
   });
-  userinfo.connectUserInfo(user_id, socket);
-  broadcastUinfo(user_id);
 
   socket.on('*', (packet) => {
     if (userinfo.refreshUserInfo(user_id))
@@ -107,7 +108,7 @@ const onconnect = (socket) => {
         if (fn) fn({msg: config.SOCKET_SUCCESS});
       })
       .catch(error => {
-        console.log(error);
+        console.log(data, error);
         if (fn) fn({msg: error});
       })
   })
@@ -120,13 +121,14 @@ const onconnect = (socket) => {
         if (fn) fn({msg: config.SOCKET_SUCCESS, data: {new_room_id: new_room._id}});
       })
       .catch(error => {
-        console.log(error);
+        console.log(data, error);
         if (fn) fn({msg: error});
       })
   })
 
   socket.on("readat:up", (data, fn) => {
     log_func("Updating read point.", "readat:up");
+    data.time = new Date();
     engine.updateReadAt(data.room_id, user_id, data.time)
       .then(room => {
         data.user_id = user_id;
@@ -134,7 +136,7 @@ const onconnect = (socket) => {
         if (fn) fn({msg: config.SOCKET_SUCCESS});
       })
       .catch(error => {
-        console.log(error);
+        console.log(data, error);
         if (fn) fn({msg: error});
       })
   })
@@ -148,21 +150,20 @@ const onconnect = (socket) => {
         if (fn) fn({msg: config.SOCKET_SUCCESS});
       })
       .catch(error => {
-        console.log(error);
+        console.log(data, error);
         if (fn) fn({msg: error});
       })
   })
 
   socket.on("more:up", (data, fn) => {
     log_func("More messages", "more:up");
-    console.log(data);
     engine.getMessages(data.room_id, data.position, data.count)
       .then(messages => {
         sendToUser("more:down", user_id, {messages, room_id: data.room_id});
         if (fn) fn({msg: config.SOCKET_SUCCESS});
       })
       .catch(error => {
-        console.log(error);
+        console.log(data, error);
         if (fn) fn({msg: error});
       })
   })

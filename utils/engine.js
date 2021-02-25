@@ -5,6 +5,7 @@ var config  = require('../config');
 function addNewMessage(room_id, message) {
   return new Promise((resolve, reject) => {
     try {
+      message.time = new Date();
       Room.findOneAndUpdate({ _id: room_id }, {$push: {messages: message}}, {new: true}, (err, room) => {
         if (err) reject(err);
         else resolve(room);
@@ -19,6 +20,9 @@ function addNewMessage(room_id, message) {
 function addNewRoom(room) {
   return new Promise((resolve, reject) => {
     try {
+      for (var i = 0; i < room.members.length; i++) {
+        room.members[i].read_at = new Date();
+      }
       if (room._id)
         delete room._id;
       Room.create(room, (err, new_room) => {
@@ -63,10 +67,12 @@ function getRoomMembers(room_id) {
 function getMessages(room_id, position, count) {
   return new Promise((resolve, reject) => {
     try {
+      if (isNaN(position) || isNaN(count))
+        return [];
       var cnt = config.MESSAGE_LIMIT_PER_PAGE;
       if (cnt > count)
         cnt = count;
-      Room.findOne({_id: room_id}, {messages: {$slice: [-(position + cnt),  cnt]}}, (err, room) => {
+      Room.findOne({_id: room_id}, {messages: {$slice: [position - cnt,  cnt]}}, (err, room) => {
         if (err) reject(err);
         else resolve(room.messages);
       });

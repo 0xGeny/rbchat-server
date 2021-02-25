@@ -13,5 +13,6 @@ module.exports = {
 
   UPLOAD_PATH: "files/",
 
-  MESSAGE_LIMIT_PER_PAGE: 15,
+  MESSAGE_LIMIT_PER_PAGE: 50,
+  TOKEN_EXPIRE_TIME: '1d'
 }
