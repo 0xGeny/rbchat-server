@@ -5,10 +5,10 @@ var User = require('../models/user.model');
 var rbapi = require('../utils/rbapi');
 var userinfo = require('../utils/userinfo');
 
-async function login_db(req, res) {
+async function login(req, res) {
   const { username, password } = req.body;
   const user = await User.findOne({ user_name: username });
-  if (user && password == user.password) {
+  if (user && password === user.password) {
     const auth_info = {
       user_id: user.user_id
     };
@@ -25,7 +25,37 @@ async function login_db(req, res) {
   }
 }
 
-async function login(req, res) {
+async function register(req, res) {
+  const { username, password } = req.body;
+  const user = await User.findOne({ user_name: username });
+
+  console.log("Received register request:", username, password);
+
+  if (user) {
+    res.status(200).json({
+      success: false,
+      message: "Username already exists"
+    })
+  }
+  else {
+    const count = await User.count();
+    console.log("Count is", count);
+    await User.create({
+      user_id: count,
+      user_name: username,
+      password: password,
+      team_id: 0,
+    })
+
+    console.log("Register success");
+
+    res.status(200).json({
+      success: true
+    });
+  }
+}
+
+async function loginThirdParty(req, res) {
   const { username, password } = req.body;
   try {
     const user = await rbapi.authUser(username, password);
@@ -49,4 +79,4 @@ async function login(req, res) {
   }
 }
 
-module.exports = {login};
+module.exports = {login, register};

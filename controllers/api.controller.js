@@ -11,8 +11,8 @@ async function getAll(req, res) {
   
   var users;
   try {
-    //users = await User.find({});
-    users = await rbapi.fetchUsers();
+    users = await User.find({});
+    //users = await rbapi.fetchUsers();
   }
   catch(error) {
     res.status(250).json({
